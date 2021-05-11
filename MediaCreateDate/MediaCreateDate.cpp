@@ -27,12 +27,31 @@ void MediaCreateDate::dropEvent(QDropEvent *event)                 //ÍÏ×§ÎÄ¼þ½ø´
 		InputFilePath = urlList.at(0).toLocalFile();  // ½«ÆäÖÐµÚÒ»¸öURL±íÊ¾Îª±¾µØÎÄ¼þÂ·¾¶
 
 		ui.lineEdit->setText(InputFilePath);
+
+		Read = new QProcess(this); ;
+		connect(Read, SIGNAL(readyReadStandardOutput()), this, SLOT(on_readoutput()));
+		QStringList Arg;
+
+		Arg.clear();
+		Arg.append("-s");
+		Arg.append(InputFilePath);
+
+		Read->start("./exiftool.exe", Arg);
+		Read->waitForStarted();
+		Read->waitForFinished(-1);
 	}
 }
 
-void MediaCreateDate::on_pushButton_clicked()
+void MediaCreateDate::on_Button_CopyTime_clicked()
 {
-	QDateTime dateTime = ui.dateTimeEdit->dateTime();
+	QDateTime dateTime = ui.dateTimeEdit_Origin->dateTime();
+	ui.dateTimeEdit_Target->setDateTime(dateTime);
+}
+
+
+void MediaCreateDate::on_Button_Modify_clicked()
+{
+	QDateTime dateTime = ui.dateTimeEdit_Target->dateTime();
 	QString Time = dateTime.toString("yyyy:M:d hh:mm:ss");
 	QString CreateDate = "-CreateDate=";
 	QString	MediaCreateDate = "-MediaCreateDate=";
@@ -54,6 +73,8 @@ void MediaCreateDate::on_pushButton_clicked()
 	Arg.append(CreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
+	Convert->waitForStarted();
+	Convert->waitForFinished(-1);
 
 	Arg.clear();
 	Arg.append("-api");
@@ -61,6 +82,8 @@ void MediaCreateDate::on_pushButton_clicked()
 	Arg.append(MediaCreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
+	Convert->waitForStarted();
+	Convert->waitForFinished(-1);
 
 	Arg.clear();
 	Arg.append("-api");
@@ -68,10 +91,33 @@ void MediaCreateDate::on_pushButton_clicked()
 	Arg.append(TrackCreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
+	Convert->waitForStarted();
+	Convert->waitForFinished(-1);
 
 	QMessageBox::information(NULL, "ÌáÊ¾", "Íê³ÉÐÞ¸Ä£¡", QMessageBox::Yes, QMessageBox::Yes);
 
 }
 
+void MediaCreateDate::on_readoutput()
+{
+	//ui.textEdit->setText(Read->readAllStandardOutput().data());   //½«Êä³öÐÅÏ¢¶ÁÈ¡µ½±à¼­¿ò
 
+	QString output = Read->readAllStandardOutput().data();
+
+	QStringList sections = output.split("\r\n");
+
+	int length = sections.length(), i;
+
+	for (i = 0; i < length; i++)
+	{
+		if (sections.at(i).contains("MediaCreateDate"))
+		{
+			output = sections.at(i);
+		}
+	}
+	output.remove(" ");
+	sections = output.split("e:");
+	QDateTime dateTime = QDateTime::fromString(sections.at(1), "yyyy:MM:ddhh:mm:ss");
+	ui.dateTimeEdit_Origin->setDateTime(dateTime);
+}
 

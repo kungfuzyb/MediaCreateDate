@@ -18,9 +18,14 @@ public:
 
 private:
     Ui::MediaCreateDateClass ui;
+	QProcess *Read;
 
 private slots:
 	void dropEvent(QDropEvent *event);          //支持通过拖拽方式读入文件
 	void dragEnterEvent(QDragEnterEvent *event);
-	void on_pushButton_clicked();
+
+	void on_readoutput();
+
+	void on_Button_CopyTime_clicked();
+	void on_Button_Modify_clicked();
 };
