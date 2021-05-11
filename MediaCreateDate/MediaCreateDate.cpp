@@ -52,16 +52,18 @@ void MediaCreateDate::on_Button_CopyTime_clicked()
 void MediaCreateDate::on_Button_Modify_clicked()
 {
 	QDateTime dateTime = ui.dateTimeEdit_Target->dateTime();
+	if (ui.checkBox->isChecked())
+	{
+		dateTime = dateTime.addSecs(-28800);
+	}
 	QString Time = dateTime.toString("yyyy:M:d hh:mm:ss");
 	QString CreateDate = "-CreateDate=";
 	QString	MediaCreateDate = "-MediaCreateDate=";
 	QString 	TrackCreateDate = "-TrackCreateDate=";
 	CreateDate.append(Time);
-	CreateDate.append("+08:00");
 	MediaCreateDate.append(Time);
-	MediaCreateDate.append("+08:00");
 	TrackCreateDate.append(Time);
-	TrackCreateDate.append("+08:00");
+
 	QString File = ui.lineEdit->text();
 
 	QProcess *Convert = new QProcess(this); ;
@@ -69,7 +71,7 @@ void MediaCreateDate::on_Button_Modify_clicked()
 
 	Arg.clear();
 	Arg.append("-api");
-	Arg.append("QuickTimeUTC");
+	Arg.append("LargeFileSupport=1");
 	Arg.append(CreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
@@ -78,7 +80,7 @@ void MediaCreateDate::on_Button_Modify_clicked()
 
 	Arg.clear();
 	Arg.append("-api");
-	Arg.append("QuickTimeUTC");
+	Arg.append("LargeFileSupport=1");
 	Arg.append(MediaCreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
@@ -87,7 +89,7 @@ void MediaCreateDate::on_Button_Modify_clicked()
 
 	Arg.clear();
 	Arg.append("-api");
-	Arg.append("QuickTimeUTC");
+	Arg.append("LargeFileSupport=1");
 	Arg.append(TrackCreateDate);
 	Arg.append(File);
 	Convert->start("./exiftool.exe", Arg);
@@ -100,8 +102,6 @@ void MediaCreateDate::on_Button_Modify_clicked()
 
 void MediaCreateDate::on_readoutput()
 {
-	//ui.textEdit->setText(Read->readAllStandardOutput().data());   //将输出信息读取到编辑框
-
 	QString output = Read->readAllStandardOutput().data();
 
 	QStringList sections = output.split("\r\n");
@@ -118,6 +118,7 @@ void MediaCreateDate::on_readoutput()
 	output.remove(" ");
 	sections = output.split("e:");
 	QDateTime dateTime = QDateTime::fromString(sections.at(1), "yyyy:MM:ddhh:mm:ss");
+	dateTime = dateTime.addSecs(28800);
 	ui.dateTimeEdit_Origin->setDateTime(dateTime);
 }
 
